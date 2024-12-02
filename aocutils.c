@@ -51,6 +51,18 @@ bool is_sorted(int *list, int len)
         return true;
 }
 
+bool is_sorted_dec(int *list, int len)
+{
+        for (int i = 0; i < len - 1; i++)
+        {
+                if (list[i] < list[i + 1])
+                {
+                        return false;
+                }
+        }
+        return true;
+}
+
 void bubble_sort(int *list, int len)
 {
         int sorted = 0;

@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
 #include "../aocutils.h"
 
 long exe1(int *list_l, int *list_r, int len)
@@ -109,11 +106,11 @@ int main(int argc, char *argv[])
 
         /* DAY 1 EXERCISE 1 */
         // 2285373
-        printf("Sum: %d\n", exe1(list_left, list_right, lines));
+        printf("Sum: %ld\n", exe1(list_left, list_right, lines));
 
         /* DAY 1 EXERCISE 2 */
         // 21142653
-        printf("Sum: %d\n", exe2(list_left, list_right, lines));
+        printf("Sum: %ld\n", exe2(list_left, list_right, lines));
 
         free(list_left);
         free(list_right);
