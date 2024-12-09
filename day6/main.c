@@ -140,6 +140,53 @@ void reset_map(char **m, int c, struct position s)
         *(m[s.l] + s.o) = '^';
 }
 
+int unique_fields(char **m, int c)
+{
+        int sum = 0;
+
+        for (int i = 0; i < c; i++)
+        {
+                for (int j = 0; j < (strlen(m[0]) - 1); j++)
+                {
+                        if (*(m[i] + j) != '.' && *(m[i] + j) != '#' && *(m[i] + j) != 'O')
+                                sum++;
+                }
+        }
+
+        return sum;
+}
+
+int get_unique_fields(char **m, int c, struct position *p, int n)
+{
+        int ret = 0;
+
+        for (int i = 0; i < c; i++)
+        {
+                for (int j = 0; j < (strlen(m[0]) - 1); j++)
+                {
+                        if (*(m[i] + j) != '.' && *(m[i] + j) != '#' && *(m[i] + j) != 'O')
+                        {
+                                p[ret].l = i;
+                                p[ret].o = j;
+                                ret++;
+                        }
+                }
+        }
+
+        return ret + 1;
+}
+
+bool check_log(struct position *l, int s, int i)
+{
+        for (int j = (i + 1) % s; j < i; j = (j + 1) % s)
+        {
+                if(l[j].l == l[i].l && l[j].o == l[i].o && l[j].d == l[i].d)
+                        return true;
+        }
+
+        return false;
+}
+
 int main(int argc, char *argv[])
 {
         size_t len = 192;
@@ -154,13 +201,14 @@ int main(int argc, char *argv[])
         int sum = 0;
         bool loop;
         int loops = 0;
+        int n_uf = 0;
 
         if (argc > 1)
                 filename = argv[1];
         else
                 filename = TESTFILE;
 
-        l_count = getLinF(filename) - 1;
+        l_count = getLinF(filename);
 
         map = calloc(l_count, sizeof(char *));
 
@@ -176,10 +224,80 @@ int main(int argc, char *argv[])
 
         s = get_pos(map, l_count, strlen(map[0]) - 1);
 
-        for (int i = 0; i < l_count; i++)
+        /* PART 1 */
+        p.l = s.l;
+        p.o = s.o;
+        p.d = s.d;
+        update(map, p, 'u');
+        while (check_for_move(map, l_count, strlen(map[0]) - 1, p) != ' ' && !loop)
         {
-                for (int j = 0; j < 10; j++)
+                loop = false;
+                move(map, l_count, strlen(map[0]) - 1, &p, &loop);
+                // draw_map(map, l_count);
+                // printf("p: line = %d; offset = %d; direction = \'%c\'\n", p.l, p.o, p.d);
+        }
+        // draw_map(map, l_count);
+        sum = unique_fields(map, l_count);
+        printf("unique fields: %d\n", sum);
+        struct position *uf = (struct position *) calloc(sum, sizeof(struct position));
+        n_uf = get_unique_fields(map, l_count, uf, sum);
+        reset_map(map, l_count, s);
+
+        for (int i = 0; i < n_uf; i++)
+        {
+                struct position *log = (struct position *) calloc(500, sizeof(struct position));
+                int idx = 0;
+
+                sum = 0;
+                loop = false;
+                p.l = s.l;
+                p.o = s.o;
+                p.d = s.d;
+
+                /* if (*(map[uf[i].l] + uf[i].o) == '#' || *(map[i] + j) == '^')
+                        continue; */
+
+                *(map[uf[i].l] + uf[i].o) = 'O';
+
+                // draw_map(map, l_count);
+
+                update(map, p, 'u');
+                while (check_for_move(map, l_count, strlen(map[0]) - 1, p) != ' ' && !loop)
                 {
+                        move(map, l_count, strlen(map[0]) - 1, &p, &loop);
+                        log[idx].l = p.l;
+                        log[idx].o = p.o;
+                        log[idx].d = p.d;
+                        if(check_log(log, 500, idx))
+                                loop = true;
+                        idx = (idx + 1) % 500;
+                        // draw_map(map, l_count);
+                }
+
+                // draw_map(map, l_count);
+
+                sum = unique_fields(map, l_count);
+
+                if (loop)
+                {
+                        printf("%3d, %3d: Xs: %d - loop \n", uf[i].l, uf[i].o, sum);
+                        loops++;
+                        /* draw_map(map, l_count);
+                        printf("\n"); */
+                }
+
+                *(map[uf[i].l] + uf[i].o) = '.';
+                reset_map(map, l_count, s);
+
+                free(log);
+        }
+
+
+        /* for (int i = 0; i < l_count; i++)
+        {
+                for (int j = 0; j < strlen(map[0]) - 1; j++)
+                {
+                        sum = 0;
                         loop = false;
                         p.l = s.l;
                         p.o = s.o;
@@ -192,7 +310,7 @@ int main(int argc, char *argv[])
 
                         // draw_map(map, l_count);
 
-                        update(map, p, '|');
+                        update(map, p, 'u');
                         while (check_for_move(map, l_count, strlen(map[0]) - 1, p) != ' ' && !loop)
                         {
                                 loop = false;
@@ -202,14 +320,7 @@ int main(int argc, char *argv[])
 
                         // draw_map(map, l_count);
 
-                        for (int i = 0; i < l_count; i++)
-                        {
-                                for (int j = 0; j < (strlen(map[0]) - 1); j++)
-                                {
-                                        if (*(map[i] + j) != '.' && *(map[i] + j) != '#' && *(map[i] + j) != 'O')
-                                                sum++;
-                                }
-                        }
+                        sum = unique_fields(map, l_count);
 
                         if (loop)
                         {
@@ -221,13 +332,14 @@ int main(int argc, char *argv[])
 
                         *(map[i] + j) = '.';
                         reset_map(map, l_count, s);
-
-                        sum = 0;
                 }
-        }
+        } */
 
         printf("loops: %d\n", loops);
 
+        free(uf);
+        for (int i = 0; i < l_count; i++)
+                free(map[i]);
         fclose(fp);
         exit(EXIT_SUCCESS);
 }
