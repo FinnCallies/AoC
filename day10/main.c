@@ -90,27 +90,27 @@ bool pina(struct pos p, struct pos *a, int l)
         return false;
 }
 
-struct pos *es;
-int l_es;
+// struct pos *es;
+// int l_es;
 
 int calc_next(char **f, int ls, struct pos p)
 {
         struct pos *a = (struct pos *) calloc(4, sizeof(struct pos));
         int ret = 0;
-
+/*
         if(*(f[p.l] + p.o) == '0') {
                 free(es);
                 es = NULL;
                 l_es = 0;
         }
-
+*/
         if(*(f[p.l] + p.o) == '9') {
-                if(pina(p, es, l_es))
+                /* if(pina(p, es, l_es))
                         return 0;
                 l_es++;
                 es = (struct pos *) realloc(es, l_es * sizeof(struct pos));
                 es[l_es - 1].l = p.l;
-                es[l_es - 1].o = p.o;
+                es[l_es - 1].o = p.o; */
                 // printf(" [ %d, %d ]", p.l, p.o);
                 free(a);
                 return 1;
